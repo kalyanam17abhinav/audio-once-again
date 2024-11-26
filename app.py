@@ -1,60 +1,60 @@
-import streamlit as st
-import numpy as np
-import librosa
-import tensorflow as tf
-from tensorflow.keras.models import load_model
-import os
+# import streamlit as st
+# import numpy as np
+# import librosa
+# import tensorflow as tf
+# from tensorflow.keras.models import load_model
+# import os
 
-# Load the trained model
-model = load_model("./audio_classifier2.h5")
+# # Load the trained model
+# model = load_model("./audio_classifier2.h5")
 
-# Function to preprocess the .flac audio file
+# # Function to preprocess the .flac audio file
+# # def preprocess_audio(file_path):
+# #     # Load the audio file
+# #     audio, sr = librosa.load(file_path, sr=22050)
+# #     # Extract MFCC features
+# #     mfcc = librosa.feature.mfcc(audio, sr=sr, n_mfcc=13)
+# #     # Aggregate features (mean of each MFCC coefficient across frames)
+# #     mfcc_scaled = np.mean(mfcc.T, axis=0)
+# #     return mfcc_scaled
 # def preprocess_audio(file_path):
-#     # Load the audio file
-#     audio, sr = librosa.load(file_path, sr=22050)
-#     # Extract MFCC features
-#     mfcc = librosa.feature.mfcc(audio, sr=sr, n_mfcc=13)
+#     # Load the audio file as mono and with a sample rate of 22050 Hz
+#     audio, sr = librosa.load(file_path, sr=22050, mono=True)
+    
+#     # Check if the audio has been loaded correctly
+#     if len(audio) == 0:
+#         raise ValueError("Loaded audio is empty.")
+    
+#     # Extract MFCC features (13 MFCCs, typically used for speech)
+#     mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13)
+    
 #     # Aggregate features (mean of each MFCC coefficient across frames)
 #     mfcc_scaled = np.mean(mfcc.T, axis=0)
 #     return mfcc_scaled
-def preprocess_audio(file_path):
-    # Load the audio file as mono and with a sample rate of 22050 Hz
-    audio, sr = librosa.load(file_path, sr=22050, mono=True)
+
+# # Streamlit UI
+# st.title("Audio Classification App")
+# st.write("Upload a `.flac` file to classify as bonafide or spoof.")
+
+# uploaded_file = st.file_uploader("Choose a .flac file", type=["flac"])
+
+# if uploaded_file is not None:
+#     with open("temp_audio.flac", "wb") as f:
+#         f.write(uploaded_file.read())
     
-    # Check if the audio has been loaded correctly
-    if len(audio) == 0:
-        raise ValueError("Loaded audio is empty.")
-    
-    # Extract MFCC features (13 MFCCs, typically used for speech)
-    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13)
-    
-    # Aggregate features (mean of each MFCC coefficient across frames)
-    mfcc_scaled = np.mean(mfcc.T, axis=0)
-    return mfcc_scaled
+#     # Process the uploaded file
+#     mel_spec = preprocess_audio("temp_audio.flac")
+#     mel_spec = np.expand_dims(mel_spec, axis=-1)  # Add channel dimension
+#     mel_spec = np.expand_dims(mel_spec, axis=0)   # Add batch dimension
 
-# Streamlit UI
-st.title("Audio Classification App")
-st.write("Upload a `.flac` file to classify as bonafide or spoof.")
+#     # Predict with the model
+#     prediction = model.predict(mel_spec)
+#     predicted_class = np.argmax(prediction, axis=1)
+#     class_labels = {0: "spoof", 1: "bonafide"}
 
-uploaded_file = st.file_uploader("Choose a .flac file", type=["flac"])
-
-if uploaded_file is not None:
-    with open("temp_audio.flac", "wb") as f:
-        f.write(uploaded_file.read())
-    
-    # Process the uploaded file
-    mel_spec = preprocess_audio("temp_audio.flac")
-    mel_spec = np.expand_dims(mel_spec, axis=-1)  # Add channel dimension
-    mel_spec = np.expand_dims(mel_spec, axis=0)   # Add batch dimension
-
-    # Predict with the model
-    prediction = model.predict(mel_spec)
-    predicted_class = np.argmax(prediction, axis=1)
-    class_labels = {0: "spoof", 1: "bonafide"}
-
-    st.write("Prediction:")
-    st.write(f"Class: {class_labels[predicted_class[0]]}")
-    st.write(f"Confidence: {prediction[0][predicted_class[0]]:.2f}")
+#     st.write("Prediction:")
+#     st.write(f"Class: {class_labels[predicted_class[0]]}")
+#     st.write(f"Confidence: {prediction[0][predicted_class[0]]:.2f}")
 
 
 
@@ -177,46 +177,59 @@ if uploaded_file is not None:
 
 
 
+import streamlit as st
+import numpy as np
+import librosa
+import tensorflow as tf
+from tensorflow.keras.models import load_model
 
+# Load the trained model
+model = load_model("./audio_classifier2.h5")
 
+# Function to preprocess the .flac audio file
+def preprocess_audio(file_path):
+    # Load the audio file as mono and with a sample rate of 22050 Hz
+    audio, sr = librosa.load(file_path, sr=22050, mono=True)
+    
+    # Check if the audio has been loaded correctly
+    if len(audio) == 0:
+        raise ValueError("Loaded audio is empty.")
+    
+    # Extract MFCC features (13 MFCCs, typically used for speech)
+    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13)
+    
+    # Aggregate features (mean of each MFCC coefficient across frames)
+    mfcc_scaled = np.mean(mfcc.T, axis=0)
+    return mfcc_scaled
 
+# Streamlit UI
+st.title("Audio Classification App")
+st.write("Upload a `.flac` file to classify as bonafide or spoof.")
 
+uploaded_file = st.file_uploader("Choose a .flac file", type=["flac"])
 
-# import streamlit as st
-# import numpy as np
-# import librosa
+if uploaded_file is not None:
+    with open("temp_audio.flac", "wb") as f:
+        f.write(uploaded_file.read())
+    
+    try:
+        # Process the uploaded file
+        mel_spec = preprocess_audio("temp_audio.flac")
+        mel_spec = np.expand_dims(mel_spec, axis=0)   # Add batch dimension
+        mel_spec = np.expand_dims(mel_spec, axis=-1)  # Add channel dimension if needed
 
-# # Load the trained model (assuming it's saved as audio_classifier2.h5)
-# model = load_model("./audio_classifier2.h5")
+        # Print to verify shape
+        st.write(f"Processed audio shape: {mel_spec.shape}")
 
-# # Function to preprocess the .flac audio file (extracts MFCCs)
-# def preprocess_audio(file_path):
-#     audio, sr = librosa.load(file_path, sr=22050)
-#     mfcc_features = librosa.feature.mfcc(audio, sr=sr, n_mfcc=13)
-#     # Aggregate features (mean of each MFCC coefficient across frames)
-#     mfcc_scaled = np.mean(mfcc_features.T, axis=0)
-#     return mfcc_scaled
+        # Predict with the model
+        prediction = model.predict(mel_spec)
+        predicted_class = np.argmax(prediction, axis=1)
+        class_labels = {0: "spoof", 1: "bonafide"}
 
-# # Streamlit UI
-# st.title("Audio Classification App")
-# st.write("Upload a `.flac` file to classify as bonafide or spoof.")
+        # Display the results
+        st.write("Prediction:")
+        st.write(f"Class: {class_labels[predicted_class[0]]}")
+        st.write(f"Confidence: {prediction[0][predicted_class[0]]:.2f}")
+    except Exception as e:
+        st.error(f"Error processing audio: {e}")
 
-# uploaded_file = st.file_uploader("Choose a .flac file", type=["flac"])
-
-# if uploaded_file is not None:
-#     with open("temp_audio.flac", "wb") as f:
-#         f.write(uploaded_file.read())
-
-#     # Process the uploaded file
-#     mfcc_features = preprocess_audio("temp_audio.flac")
-#     mfcc_features = np.expand_dims(mfcc_features, axis=-1)  # Add channel dimension
-#     mfcc_features = np.expand_dims(mfcc_features, axis=0)  # Add batch dimension
-
-#     # Predict with the model
-#     prediction = model.predict(mfcc_features)
-#     predicted_class = np.argmax(prediction, axis=1)
-#     class_labels = {0: "spoof", 1: "bonafide"}
-
-#     st.write("Prediction:")
-#     st.write(f"Class: {class_labels[predicted_class[0]]}")
-#     st.write(f"Confidence: {prediction[0][predicted_class[0]]:.2f}")
