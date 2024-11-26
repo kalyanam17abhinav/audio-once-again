@@ -9,11 +9,25 @@ import os
 model = load_model("./audio_classifier2.h5")
 
 # Function to preprocess the .flac audio file
+# def preprocess_audio(file_path):
+#     # Load the audio file
+#     audio, sr = librosa.load(file_path, sr=22050)
+#     # Extract MFCC features
+#     mfcc = librosa.feature.mfcc(audio, sr=sr, n_mfcc=13)
+#     # Aggregate features (mean of each MFCC coefficient across frames)
+#     mfcc_scaled = np.mean(mfcc.T, axis=0)
+#     return mfcc_scaled
 def preprocess_audio(file_path):
-    # Load the audio file
-    audio, sr = librosa.load(file_path, sr=22050)
-    # Extract MFCC features
-    mfcc = librosa.feature.mfcc(audio, sr=sr, n_mfcc=13)
+    # Load the audio file as mono and with a sample rate of 22050 Hz
+    audio, sr = librosa.load(file_path, sr=22050, mono=True)
+    
+    # Check if the audio has been loaded correctly
+    if len(audio) == 0:
+        raise ValueError("Loaded audio is empty.")
+    
+    # Extract MFCC features (13 MFCCs, typically used for speech)
+    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13)
+    
     # Aggregate features (mean of each MFCC coefficient across frames)
     mfcc_scaled = np.mean(mfcc.T, axis=0)
     return mfcc_scaled
