@@ -168,30 +168,19 @@
 
 
 
-
 import streamlit as st
 import numpy as np
 import librosa
-import tensorflow as tf
-from tensorflow.keras.models import load_model
 
-# Load the trained model
+# Load the trained model (assuming it's saved as audio_classifier2.h5)
 model = load_model("./audio_classifier2.h5")
 
-# Function to preprocess the .flac audio file
-def preprocess_audio(uploaded_file):
-    # Load the audio file
-    audio, sr = librosa.load(uploaded_file, sr=22050)
-    # Ensure consistent length (e.g., 1 second)
-    target_length = sr  # 22050 samples per second
-    if len(audio) < target_length:
-        audio = np.pad(audio, (0, target_length - len(audio)), mode='constant')
-    else:
-        audio = audio[:target_length]
-    # Extract MFCC features
-    mfcc = librosa.feature.mfcc(audio, sr=sr, n_mfcc=13)
+# Function to preprocess the .flac audio file (extracts MFCCs)
+def preprocess_audio(file_path):
+    audio, sr = librosa.load(file_path, sr=22050)
+    mfcc_features = librosa.feature.mfcc(audio, sr=sr, n_mfcc=13)
     # Aggregate features (mean of each MFCC coefficient across frames)
-    mfcc_scaled = np.mean(mfcc.T, axis=0)
+    mfcc_scaled = np.mean(mfcc_features.T, axis=0)
     return mfcc_scaled
 
 # Streamlit UI
@@ -201,17 +190,19 @@ st.write("Upload a `.flac` file to classify as bonafide or spoof.")
 uploaded_file = st.file_uploader("Choose a .flac file", type=["flac"])
 
 if uploaded_file is not None:
+    with open("temp_audio.flac", "wb") as f:
+        f.write(uploaded_file.read())
+
     # Process the uploaded file
-    mel_spec = preprocess_audio(uploaded_file)
-    mel_spec = np.expand_dims(mel_spec, axis=-1)  # Add channel dimension
-    mel_spec = np.expand_dims(mel_spec, axis=0)   # Add batch dimension
+    mfcc_features = preprocess_audio("temp_audio.flac")
+    mfcc_features = np.expand_dims(mfcc_features, axis=-1)  # Add channel dimension
+    mfcc_features = np.expand_dims(mfcc_features, axis=0)  # Add batch dimension
 
     # Predict with the model
-    prediction = model.predict(mel_spec)
+    prediction = model.predict(mfcc_features)
     predicted_class = np.argmax(prediction, axis=1)
     class_labels = {0: "spoof", 1: "bonafide"}
 
     st.write("Prediction:")
     st.write(f"Class: {class_labels[predicted_class[0]]}")
     st.write(f"Confidence: {prediction[0][predicted_class[0]]:.2f}")
-
