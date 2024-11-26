@@ -29,7 +29,7 @@ if uploaded_file is not None:
         f.write(uploaded_file.read())
     
     # Process the uploaded file
-    mel_spec = process_audio("temp_audio.flac")
+    mel_spec = preprocess_audio("temp_audio.flac")
     mel_spec = np.expand_dims(mel_spec, axis=-1)  # Add channel dimension
     mel_spec = np.expand_dims(mel_spec, axis=0)   # Add batch dimension
 
