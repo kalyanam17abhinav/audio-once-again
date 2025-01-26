@@ -222,7 +222,9 @@ st.write("Upload a `.flac` file to classify as bonafide or spoof.")
 uploaded_file = st.file_uploader("Choose a .flac file", type=["flac"])
 
 if uploaded_file is not None:
-    if uploaded_file.size == 0:
+    if not uploaded_file.name.endswith(".flac"):
+        st.error("Invalid file format. Please upload a `.flac` file.")
+    elif uploaded_file.size == 0:
         st.warning("The uploaded file is empty. Please upload a valid `.flac` file.")
     else:
         with open("temp_audio.flac", "wb") as f:
