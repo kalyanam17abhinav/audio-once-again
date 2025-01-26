@@ -222,26 +222,28 @@ st.write("Upload a `.flac` file to classify as bonafide or spoof.")
 uploaded_file = st.file_uploader("Choose a .flac file", type=["flac"])
 
 if uploaded_file is not None:
-    with open("temp_audio.flac", "wb") as f:
-        f.write(uploaded_file.read())
-    
-    try:
-        # Process the uploaded file
-        mel_spec = preprocess_audio("temp_audio.flac")
-        mel_spec = np.expand_dims(mel_spec, axis=0)  # Add batch dimension
+    if uploaded_file.size == 0:
+        st.warning("The uploaded file is empty. Please upload a valid `.flac` file.")
+    else:
+        with open("temp_audio.flac", "wb") as f:
+            f.write(uploaded_file.read())
 
-        # Print to verify shape
-        st.write(f"Processed audio shape: {mel_spec.shape}")
+        try:
+            # Process the uploaded file
+            mel_spec = preprocess_audio("temp_audio.flac")
+            mel_spec = np.expand_dims(mel_spec, axis=0)  # Add batch dimension
 
-        # Predict with the model
-        prediction = model.predict(mel_spec)
-        predicted_class = np.argmax(prediction, axis=1)
-        class_labels = {0: "spoof", 1: "bonafide"}
+            # Print to verify shape
+            st.write(f"Processed audio shape: {mel_spec.shape}")
 
-        # Display the results
-        st.write("Prediction:")
-        st.write(f"Class: {class_labels[predicted_class[0]]}")
-        st.write(f"Confidence: {prediction[0][predicted_class[0]]:.2f}")
-    except Exception as e:
-        st.error(f"Error processing audio: {e}")
+            # Predict with the model
+            prediction = model.predict(mel_spec)
+            predicted_class = np.argmax(prediction, axis=1)
+            class_labels = {0: "spoof", 1: "bonafide"}
 
+            # Display the results
+            st.write("Prediction:")
+            st.write(f"Class: {class_labels[predicted_class[0]]}")
+            st.write(f"Confidence: {prediction[0][predicted_class[0]]:.2f}")
+        except Exception as e:
+            st.error(f"Error processing audio: {e}")
