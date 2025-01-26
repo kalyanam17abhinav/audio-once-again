@@ -219,7 +219,7 @@ def preprocess_audio(file_path):
 st.title("Audio Classification App")
 st.write("Upload a `.flac` file to classify as bonafide or spoof.")
 
-uploaded_file = st.file_uploader("Choose a .flac file", type=["flac"])
+uploaded_file = st.file_uploader("Choose a .flac file", type=None)
 
 if uploaded_file is not None:
     if not uploaded_file.name.endswith(".flac"):
