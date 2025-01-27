@@ -244,7 +244,7 @@ if uploaded_file is not None:
             class_labels = {0: "spoof", 1: "bonafide"}
 
             # Display the results
-            st.write("Prediction:")
+            st.markdown("<span style='color:red; font-weight:bold;'>Prediction:</span>", unsafe_allow_html=True)
             st.write(f"Class: {class_labels[predicted_class[0]]}")
             st.write(f"Confidence: {prediction[0][predicted_class[0]]:.2f}")
         except Exception as e:
